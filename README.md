@@ -11,4 +11,4 @@ The repository consists of three sub-projects:
  <br>
  <br>
  
-![](images/cover.png)
+![](images/cover_image-01.png)
