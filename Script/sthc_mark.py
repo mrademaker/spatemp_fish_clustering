@@ -18,8 +18,6 @@ from scipy.cluster import hierarchy
 from scipy import spatial
 from scipy.ndimage import gaussian_filter
 from scipy.cluster.hierarchy import cophenet
-from scipy.spatial.distance import pdist
-
 
 class MissingDataset(Exception):
     """Exception raised for errors in the input.
@@ -47,12 +45,21 @@ class STHC(object):
         self.attribute_norm_values = {}
         self.sqdm = None
 
-    def calculate_clusters(self,method='average'):
+    def calculate_clusters(self, method='average'):
         self.row_clusters = linkage(self.dm, method=method)
         c,co_dists = cophenet(self.row_clusters,self.dm)
         print (method+' Cophenetic correlation coeffficient = '+str(c))
 
 
+
+    def calculate_clusters_hdbscan(self):
+        #conda install -c conda-forge hdbscan
+        import hdbscan
+        if isinstance(self.sqdm, type(None)):
+            self.sqdm = squareform(self.dm)
+        self.row_clusters = hdbscan.HDBSCAN(metric='precomputed')
+        self.row_clusters.fit(self.sqdm)
+        
     def print_dendrogram(self, figsize=(9, 6), dpi=300):
         colors_grey = [n for n, hex in colors.cnames.iteritems() if 'grey' in n]
         # print colors_grey
@@ -76,6 +83,7 @@ class STHC(object):
             raise MissingDataset("calcualte_distance_matrix", "Need to load the dataset first...")
         else:
             # self.dm_old = pdist(self.X, self.calculate_distance)
+            self.sqdm = None
             try:
                 del self.dm
             except:
@@ -396,7 +404,7 @@ class STHC(object):
 
         return np.mean(scores)
 
-    def silhoutte_scores_n_clusters(self, n_clusters=None, printV=False):
+  def silhoutte_scores_n_clusters(self, n_clusters=None, printV=False):
         outScores = []
         if isinstance(self.sqdm, type(None)):
             self.sqdm = squareform(self.dm)
@@ -437,8 +445,8 @@ class STHC(object):
         #print("Try {0} clusters...".format(n_clusters[bottom]))
         #plt.show()
         return list(zip(n_clusters, outScores))
-
-    def silouhetteScore(self, n_clusters, printV=False):
+    
+    def silohetteScore(self, n_clusters, printV=False):
         outScores = []
         if isinstance(self.sqdm, type(None)):
             self.sqdm = squareform(self.dm)
